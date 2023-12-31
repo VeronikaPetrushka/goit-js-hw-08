@@ -63,3 +63,71 @@ const images = [
     description: "Lighthouse Coast Sea",
   },
 ];
+
+const gallery = document.querySelector("ul.gallery");
+const fragment = document.createDocumentFragment();
+
+const galleryItems = images.map(({ preview, original, description }) => {
+  const galleryItem = document.createElement("li");
+  galleryItem.classList.add("gallery-item");
+
+  const galleryLink = document.createElement("a");
+  galleryLink.classList.add("gallery-link");
+  galleryLink.href = original;
+
+  const galleryImage = document.createElement("img");
+  galleryImage.classList.add("gallery-image");
+  galleryImage.src = preview;
+  galleryImage.dataset.source = original;
+  galleryImage.alt = description;
+
+  galleryLink.appendChild(galleryImage);
+  galleryItem.appendChild(galleryLink);
+
+  return galleryItem;
+});
+
+fragment.append(...galleryItems);
+gallery.appendChild(fragment);
+
+gallery.addEventListener("click", handleClick);
+
+let instance;
+
+function handleClick(event) {
+  event.preventDefault();
+
+  if (event.target === event.currentTarget) {
+    return;
+  }
+
+  const original = event.target.dataset.source;
+  const description = event.target.alt;
+
+  instance = basicLightbox.create(
+    `<div class="gallery-item">
+            <a class="gallery-link" href="${original}">
+            <img class="gallery-image"
+            src="${original}"
+            alt="${description}" width="1112" height="640"/>
+            </a>
+        </div>`,
+    {
+      onShow: () => {
+        document.addEventListener("keydown", modalClose);
+      },
+      onClose: () => {
+        document.removeEventListener("keydown", modalClose);
+      },
+    }
+  );
+
+  instance.show();
+}
+
+function modalClose(event) {
+  if (event.code === "Escape") {
+    document.removeEventListener("keydown", modalClose);
+    instance.close();
+  }
+}
